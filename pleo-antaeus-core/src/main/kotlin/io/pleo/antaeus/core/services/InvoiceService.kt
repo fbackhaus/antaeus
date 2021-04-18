@@ -9,7 +9,7 @@ import io.pleo.antaeus.data.AntaeusDal
 import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
 
-class InvoiceService(private val dal: AntaeusDal) {
+class InvoiceService(private val dal: AntaeusDal, private val billingService: BillingService) {
     fun fetchAll(): List<Invoice> {
         return dal.fetchInvoices()
     }
@@ -20,5 +20,9 @@ class InvoiceService(private val dal: AntaeusDal) {
 
     fun fetch(status: InvoiceStatus): List<Invoice> {
         return dal.fetchInvoices(status)
+    }
+
+    fun payPendingInvoices() {
+        return billingService.payPendingInvoices(fetch(InvoiceStatus.PENDING))
     }
 }

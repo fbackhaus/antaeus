@@ -12,7 +12,9 @@ class InvoiceServiceTest {
         every { fetchInvoice(404) } returns null
     }
 
-    private val invoiceService = InvoiceService(dal = dal)
+    private val billingService = mockk<BillingService> {}
+
+    private val invoiceService = InvoiceService(dal = dal, billingService = billingService)
 
     @Test
     fun `will throw if invoice is not found`() {

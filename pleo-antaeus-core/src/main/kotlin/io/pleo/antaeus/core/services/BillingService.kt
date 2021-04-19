@@ -12,7 +12,7 @@ class BillingService(
     private val logger = KotlinLogging.logger {}
     private val maxNumberOfRetries = 3
 
-    fun payPendingInvoices(pendingInvoices: List<Invoice>) {
+    fun payPendingInvoices(pendingInvoices: List<Invoice>): MutableList<Invoice> {
         val processedInvoices: MutableList<Invoice> = mutableListOf()
 
         for (invoice in pendingInvoices) {
@@ -21,6 +21,7 @@ class BillingService(
             //TODO: Update invoices in the database
             //TODO: Send email/message to notify that the process has run, and what's the outcome
         }
+        return processedInvoices
     }
 
     private fun payInvoice(invoice: Invoice, retries: Int = 1): Invoice {

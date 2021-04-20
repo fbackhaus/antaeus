@@ -1,7 +1,12 @@
 package io.pleo.antaeus.core.services
 
+import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
+import io.pleo.antaeus.core.exceptions.CurrencyMismatchException
+import io.pleo.antaeus.core.exceptions.CustomerNotFoundException
+import io.pleo.antaeus.core.exceptions.NetworkException
 import io.pleo.antaeus.core.external.PaymentProvider
 import io.pleo.antaeus.models.*
 import org.junit.jupiter.api.Assertions.*
@@ -32,25 +37,110 @@ class BillingServiceTest {
         }
     }
 
+    @Test
+    fun `when a CurrencyMismatchException is thrown, there are no retries and the invoice is still pending`() {
+        val pendingInvoice = getPendingInvoice()
+
+        every { paymentProvider.charge(pendingInvoice) } throws CurrencyMismatchException(pendingInvoice.id, pendingInvoice.customerId)
+
+        val processedInvoices = billingService.payPendingInvoices(listOf(pendingInvoice))
+
+        verifyNonRetryableExceptionWasThrown(pendingInvoice, processedInvoices)
+    }
+
+    @Test
+    fun `when a CustomerNotFoundException is thrown, there are no retries and the invoice is still pending`() {
+        val pendingInvoice = getPendingInvoice()
+
+        every { paymentProvider.charge(pendingInvoice) } throws CustomerNotFoundException(pendingInvoice.customerId)
+
+        val processedInvoices = billingService.payPendingInvoices(listOf(pendingInvoice))
+
+        verifyNonRetryableExceptionWasThrown(pendingInvoice, processedInvoices)
+    }
+
+    @Test
+    fun `when a NetworkException is thrown and all the retries are exceeded, the invoice is still pending`() {
+        val pendingInvoice = getPendingInvoice()
+
+        every { paymentProvider.charge(pendingInvoice) } throws NetworkException()
+
+        val processedInvoices = billingService.payPendingInvoices(listOf(pendingInvoice))
+
+        verifyRetryableExceptionWasThrownButRetriesExceeded(pendingInvoice, processedInvoices)
+    }
+
+    @Test
+    fun `when a NetworkException is thrown but the last retry is successful, the invoice is paid successfully`() {
+        val pendingInvoice = getPendingInvoice()
+
+        every { paymentProvider.charge(pendingInvoice) } throws NetworkException() andThenThrows NetworkException() andThen true
+
+        val processedInvoices = billingService.payPendingInvoices(listOf(pendingInvoice))
+
+        verifyRetryableExceptionWasThrownItGotRecovered(pendingInvoice, processedInvoices)
+    }
+
+    private fun verifyRetryableExceptionWasThrownItGotRecovered(pendingInvoice: Invoice, processedInvoices: MutableList<Invoice>) {
+        assertEquals(1, processedInvoices.size)
+
+        assertEquals(pendingInvoice.amount, processedInvoices.first().amount)
+        assertEquals(pendingInvoice.customerId, processedInvoices.first().customerId)
+        assertEquals(pendingInvoice.id, processedInvoices.first().id)
+        assertEquals(InvoiceStatus.PAID, processedInvoices.first().status)
+
+        verify(exactly = 3) { paymentProvider.charge(pendingInvoice) }
+        confirmVerified(paymentProvider)
+    }
+
+    private fun verifyNonRetryableExceptionWasThrown(pendingInvoice: Invoice, processedInvoices: List<Invoice>) {
+        assertEquals(1, processedInvoices.size)
+
+        assertEquals(pendingInvoice.amount, processedInvoices.first().amount)
+        assertEquals(pendingInvoice.customerId, processedInvoices.first().customerId)
+        assertEquals(pendingInvoice.id, processedInvoices.first().id)
+        assertEquals(InvoiceStatus.PENDING, processedInvoices.first().status)
+
+        verify(exactly = 1) { paymentProvider.charge(pendingInvoice) }
+        confirmVerified(paymentProvider)
+    }
+
+    private fun verifyRetryableExceptionWasThrownButRetriesExceeded(pendingInvoice: Invoice, processedInvoices: List<Invoice>) {
+        assertEquals(1, processedInvoices.size)
+
+        assertEquals(pendingInvoice.amount, processedInvoices.first().amount)
+        assertEquals(pendingInvoice.customerId, processedInvoices.first().customerId)
+        assertEquals(pendingInvoice.id, processedInvoices.first().id)
+        assertEquals(InvoiceStatus.PENDING, processedInvoices.first().status)
+
+        verify(exactly = 3) { paymentProvider.charge(pendingInvoice) }
+        confirmVerified(paymentProvider)
+    }
+
     private fun getPendingInvoices(numberOfInvoices: Int): MutableList<Invoice> {
         val pendingInvoices = mutableListOf<Invoice>()
-        val customer = Customer(
-            id = 1,
-            currency = Currency.values()[Random.nextInt(0, Currency.values().size)]
-        )
 
         (1..numberOfInvoices).forEach {
-            pendingInvoices.add(Invoice(
-                id = it,
-                customerId = customer.id,
-                amount = Money(
-                    value = BigDecimal(Random.nextDouble(10.0, 500.0)),
-                    currency = customer.currency
-                ),
-                status = InvoiceStatus.PENDING
-            ))
+            pendingInvoices.add(getPendingInvoice())
         }
 
         return pendingInvoices
+    }
+
+    private fun getPendingInvoice(): Invoice {
+        val customer = Customer(
+            id = Random.nextInt(1, 100),
+            currency = Currency.values()[Random.nextInt(0, Currency.values().size)]
+        )
+
+        return (Invoice(
+            id = Random.nextInt(1, 100),
+            customerId = customer.id,
+            amount = Money(
+                value = BigDecimal(Random.nextDouble(10.0, 500.0)),
+                currency = customer.currency
+            ),
+            status = InvoiceStatus.PENDING
+        ))
     }
 }

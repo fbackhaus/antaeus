@@ -24,5 +24,8 @@ class InvoiceService(private val dal: AntaeusDal, private val billingService: Bi
 
     fun payPendingInvoices(): MutableList<Invoice> {
         return billingService.payPendingInvoices(fetch(InvoiceStatus.PENDING))
+            .also {
+                dal.updateInvoicesStatus(it)
+            }
     }
 }

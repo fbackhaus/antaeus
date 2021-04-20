@@ -18,7 +18,6 @@ class BillingService(
         for (invoice in pendingInvoices) {
             val processedInvoice = payInvoice(invoice)
             processedInvoices.add(processedInvoice)
-            //TODO: Update invoices in the database
             //TODO: Send email/message to notify that the process has run, and what's the outcome
         }
         return processedInvoices

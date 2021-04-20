@@ -19,6 +19,7 @@ class BillingService(
             val processedInvoice = payInvoice(invoice)
             processedInvoices.add(processedInvoice)
             //TODO: Send email/message to notify that the process has run, and what's the outcome
+            //TODO: Use coroutine to schedule a task that runs this process the first day of each month
         }
         return processedInvoices
     }

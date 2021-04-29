@@ -18,7 +18,6 @@ class BillingService(
         for (invoice in pendingInvoices) {
             val processedInvoice = payInvoice(invoice)
             processedInvoices.add(processedInvoice)
-            //TODO: Send email/message to notify that the process has run, and what's the outcome
             //TODO: Use coroutine to schedule a task that runs this process the first day of each month
         }
         return processedInvoices
@@ -46,11 +45,6 @@ class BillingService(
     }
 
     private fun markInvoiceAsPaid(invoice: Invoice): Invoice {
-        return Invoice(
-            invoice.id,
-            invoice.customerId,
-            invoice.amount,
-            InvoiceStatus.PAID
-        )
+        return invoice.copy(status = InvoiceStatus.PAID)
     }
 }

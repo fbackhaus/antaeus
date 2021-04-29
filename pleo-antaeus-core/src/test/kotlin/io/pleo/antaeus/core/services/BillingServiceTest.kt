@@ -8,11 +8,11 @@ import io.pleo.antaeus.core.exceptions.CurrencyMismatchException
 import io.pleo.antaeus.core.exceptions.CustomerNotFoundException
 import io.pleo.antaeus.core.exceptions.NetworkException
 import io.pleo.antaeus.core.external.PaymentProvider
+import io.pleo.antaeus.core.services.util.getPendingInvoice
+import io.pleo.antaeus.core.services.util.getPendingInvoices
 import io.pleo.antaeus.models.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import java.math.BigDecimal
-import kotlin.random.Random
 
 class BillingServiceTest {
     private val paymentProvider = mockk<PaymentProvider> {
@@ -115,32 +115,5 @@ class BillingServiceTest {
 
         verify(exactly = 3) { paymentProvider.charge(pendingInvoice) }
         confirmVerified(paymentProvider)
-    }
-
-    private fun getPendingInvoices(numberOfInvoices: Int): MutableList<Invoice> {
-        val pendingInvoices = mutableListOf<Invoice>()
-
-        (1..numberOfInvoices).forEach {
-            pendingInvoices.add(getPendingInvoice())
-        }
-
-        return pendingInvoices
-    }
-
-    private fun getPendingInvoice(): Invoice {
-        val customer = Customer(
-            id = Random.nextInt(1, 100),
-            currency = Currency.values()[Random.nextInt(0, Currency.values().size)]
-        )
-
-        return (Invoice(
-            id = Random.nextInt(1, 100),
-            customerId = customer.id,
-            amount = Money(
-                value = BigDecimal(Random.nextDouble(10.0, 500.0)),
-                currency = customer.currency
-            ),
-            status = InvoiceStatus.PENDING
-        ))
     }
 }

@@ -7,9 +7,11 @@
 
 package io.pleo.antaeus.app
 
+import getEmailProvider
 import getPaymentProvider
 import io.pleo.antaeus.core.services.BillingService
 import io.pleo.antaeus.core.services.CustomerService
+import io.pleo.antaeus.core.services.EmailService
 import io.pleo.antaeus.core.services.InvoiceService
 import io.pleo.antaeus.data.AntaeusDal
 import io.pleo.antaeus.data.CustomerTable
@@ -55,12 +57,14 @@ fun main() {
 
     // Get third parties
     val paymentProvider = getPaymentProvider()
+    val emailProvider = getEmailProvider()
 
     // This is _your_ billing service to be included where you see fit
     val billingService = BillingService(paymentProvider = paymentProvider)
+    val emailService = EmailService(emailProvider = emailProvider)
 
     // Create core services
-    val invoiceService = InvoiceService(dal = dal, billingService = billingService)
+    val invoiceService = InvoiceService(dal = dal, billingService = billingService, emailService = emailService)
     val customerService = CustomerService(dal = dal)
 
 

@@ -8,9 +8,9 @@ import io.pleo.antaeus.core.services.util.getPendingInvoices
 import io.pleo.antaeus.data.AntaeusDal
 import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.junit.jupiter.api.Assertions.assertEquals
 
 class InvoiceServiceTest {
     private val dal = mockk<AntaeusDal> {

@@ -2,7 +2,7 @@ package io.pleo.antaeus.core.external
 
 interface EmailProvider {
     /*
-    Sends an email to the provided subject, destination and body
+    Sends an email with the provided subject, destination and body
 
     Returns:
       `True` when the email was successfully sent.

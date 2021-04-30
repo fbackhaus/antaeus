@@ -30,7 +30,7 @@ class BillingService(
                 return markInvoiceAsPaid(invoice)
             }
         } catch (e: NetworkException) {
-            logger.warn(e) { "Network issue when trying to pay invoice, retries: $retries" }
+            logger.warn(e) { "Network issue when attempting to pay invoice, retries: $retries" }
             if (shouldRetryPayment(retries)) {
                 return payInvoice(invoice, retries + 1)
             }

@@ -18,7 +18,6 @@ class BillingService(
         for (invoice in pendingInvoices) {
             val processedInvoice = payInvoice(invoice)
             processedInvoices.add(processedInvoice)
-            //TODO: Use coroutine to schedule a task that runs this process the first day of each month
         }
         return processedInvoices
     }

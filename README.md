@@ -14,6 +14,36 @@ Fork this repo with your solution. Ideally, we'd like to see your progression th
 
 Please let us know how long the challenge takes you. We're not looking for how speedy or lengthy you are. It's just really to give us a clearer idea of what you've produced in the time you decided to take. Feel free to go as big or as small as you want.
 
+## Proposed solution
+
+The solution uses a coroutine that is launched every day. It checks if it's the first day of the month, if that's the case it:
+- Retrieves the pending invoices from the database
+- Attempts to pay those invoices, retrying upto 3 times if a `NetworkException` is thrown
+- Updates the status of the processed invoices in the database
+- Notifies via email to the team that owns the process, to let them know when it runs successfully
+- Also added the POST `/rest/v1/invoices/pay` endpoint to trigger the process manually, in case that's needed.
+
+### First steps
+
+The first thing I wanted to do, is to understand how to create a scheduler to pay the pending invoices in the database, given that is the first time I work with Kotlin.
+Instinctively, I tried to understand how to create a cron job using Kotlin and Javalin, without luck.
+
+After reading docs and posts about people trying to achieve the same thing, I decided that the way to go was to use a coroutine.
+As I had no idea about how they worked or how to use them, I decided to start building the logic we will trigger from our coroutine.
+
+### Building the solution
+
+You can see the progression in my commits. Basically:
+- Built logic that retrieves pending invoices only
+- Built logic that to call the payment provider for pending invoices, with minimal error handling
+- Added endpoint to trigger the process manually, in case it's needed for some reason, or the automatic scheduled task fails.
+- Added retry logic in the BillingService, to retry payment when a NetworkException is thrown
+- Added unit tests
+- Added logic that updates the paid invoices status in the database
+- Added EmailProvider and EmailService classes to notify when the process runs successfully. (It's just a mock for the purpose of the challenge, there's no real logic built)
+- Created coroutine that runs everyday
+
+
 ## Developing
 
 Requirements:

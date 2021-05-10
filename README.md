@@ -17,6 +17,7 @@ Please let us know how long the challenge takes you. We're not looking for how s
 ## Proposed solution
 
 The solution uses a coroutine that triggers the process the first day of each month. It:
+
 - Retrieves the pending invoices from the database
 - Attempts to pay those invoices, retrying upto 3 times if a `NetworkException` is thrown
 - Updates the status of the processed invoices in the database
@@ -25,39 +26,48 @@ The solution uses a coroutine that triggers the process the first day of each mo
 
 ### First steps
 
-The first thing I wanted to do, is to understand how to create a scheduler to pay the pending invoices in the database, given that is the first time I work with Kotlin.
-Instinctively, I tried to understand how to create a cron job using Kotlin and Javalin, without luck.
+The first thing I wanted to do, is to understand how to create a scheduler to pay the pending invoices in the database,
+given that is the first time I work with Kotlin. Instinctively, I tried to understand how to create a cron job using
+Kotlin and Javalin, without luck.
 
-After reading docs and posts about people trying to achieve the same thing, I decided that the way to go was to use a coroutine.
-As I had no idea about how they worked or how to use them, I decided to start building the logic we will trigger from our coroutine.
+After reading docs and posts about people trying to achieve the same thing, I decided that the way to go was to use a
+coroutine. As I had no idea about how they worked or how to use them, I decided to start building the logic we will
+trigger from our coroutine.
 
 ### Building the solution
 
 You can see the progression in my commits. Basically:
+
 - Built logic that retrieves pending invoices only
 - Built logic that to call the payment provider for pending invoices, with minimal error handling
-- Added endpoint to trigger the process manually, in case it's needed for some reason, or the automatic scheduled task fails.
+- Added endpoint to trigger the process manually, in case it's needed for some reason, or the automatic scheduled task
+  fails.
 - Added retry logic in the BillingService, to retry payment when a NetworkException is thrown
 - Added unit tests
 - Added logic that updates the paid invoices status in the database
-- Added EmailProvider and EmailService classes to notify when the process runs successfully. (It's just a mock for the purpose of the challenge, there's no real logic built)
+- Added EmailProvider and EmailService classes to notify when the process runs successfully. (It's just a mock for the
+  purpose of the challenge, there's no real logic built)
 - Created a simple coroutine that runs every day, but only triggers the process the first day of each month.
 
 ### Final comments
 
-I really enjoyed working on this challenge. 
-It took me a while because I wanted to understand the language a bit better before I jumped into writing code.
+I really enjoyed working on this challenge. It took me a while because I wanted to understand the language a bit better
+before I jumped into writing code.
 
-I must have worked in this challenge around 8-10 hours (hands-on code). It still took me around a month to complete it though, because of the learning curve Kotlin has:
+I must have worked in this challenge around 8-10 hours (hands-on code). It still took me around a month to complete it
+though, because of the learning curve Kotlin has:
+
 - Read the [Kotlin Docs](https://kotlinlang.org/docs/home.html).
 - Completed different labs and online trainings about Kotlin.
 - Read documentation on [Mockk](https://mockk.io) and Unit Testing with Kotlin.
 - Kotlin Coroutines [Docs](https://kotlinlang.org/docs/coroutines-overview.html)
 
-The latest item was the one that consumed most of my time. I didn't know how to trigger a periodic asynchronous task in Kotlin (I've always done it using cron jobs with Spring and Java).
-After investigating and deciding this was the way to go, I needed to understand how it worked before I wrote any code.
+The latest item was the one that consumed most of my time. I didn't know how to trigger a periodic asynchronous task in
+Kotlin (I've always done it using cron jobs with Spring and Java). After investigating and deciding this was the way to
+go, I needed to understand how it worked before I wrote any code.
 
-I'm sure there's still things to improve in the code and the design of my solution. But like I said before, it's my first time working with Kotlin, and I'm happy with it.
+I'm sure there's still things to improve in the code and the design of my solution. But like I said before, it's my
+first time working with Kotlin, and I'm happy with it.
 
 PS: I like coroutines, they're cool 🤙
 

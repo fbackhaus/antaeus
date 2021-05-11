@@ -19,7 +19,7 @@ Please let us know how long the challenge takes you. We're not looking for how s
 The solution uses a coroutine that triggers the process the first day of each month. It:
 
 - Retrieves the pending invoices from the database
-- Attempts to pay those invoices, retrying upto 3 times if a `NetworkException` is thrown
+- Attempts to pay those invoices, retrying up to 3 times if a `NetworkException` is thrown
 - Updates the status of the processed invoices in the database
 - Notifies via email to the team that owns the process, to let them know when it runs successfully
 - Also added the POST `/rest/v1/invoices/pay` endpoint to trigger the process manually, in case that's needed.

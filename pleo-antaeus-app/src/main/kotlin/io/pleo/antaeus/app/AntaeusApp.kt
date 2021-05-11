@@ -90,9 +90,11 @@ fun main() {
     runBlocking {
         launch {
             while (true) {
-                if (LocalDateTime.now().dayOfMonth == 1) {
-                    logger.info { "Launching coroutine to pay pending invoices" }
-                    invoiceService.payPendingInvoices()
+                if (shouldPendingInvoicesTaskRun()) {
+                    logger.info { "Launching scheduled task to pay pending invoices" }
+                    invoiceService.payPendingInvoices().also {
+                        logger.info { "Task completed. Processed ${it.size} invoices" }
+                    }
                 }
                 delay(1.days)
             }
@@ -100,3 +102,5 @@ fun main() {
     }
 
 }
+
+private fun shouldPendingInvoicesTaskRun() = LocalDateTime.now().dayOfMonth == 1
